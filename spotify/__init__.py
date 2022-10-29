@@ -1,0 +1,3 @@
+"""
+Spotify package for Natasha.
+"""
