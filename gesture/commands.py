@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 
 from gesture import Gesture
+from settings import settings
 class GestureCommand(ABC):
     """Base class for gesture triggered commands."""
 
