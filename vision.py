@@ -5,6 +5,7 @@ import cv2
 
 from gesture.commands import GestureCommand, shuffle_saved_tracks_command_factory
 from gesture.hands import Finger, get_hand_detector
+from spotify import Spotify
 
 
 class Vision:
@@ -62,5 +63,9 @@ class Vision:
 
 
 if __name__ == "__main__":
-    vision = Vision(draw=True)
+    spotify_client = Spotify()
+
+    gestures = [shuffle_saved_tracks_command_factory(spotify_client)]
+
+    vision = Vision(gestures=gestures, draw=True)
     vision.activate(0)

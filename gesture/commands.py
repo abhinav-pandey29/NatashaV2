@@ -7,7 +7,11 @@ import cv2
 import numpy as np
 
 from gesture import Gesture
+from gesture.hands import Finger
 from settings import settings
+from spotify import Spotify
+
+
 class GestureCommand(ABC):
     """Base class for gesture triggered commands."""
 
@@ -41,3 +45,35 @@ class GestureCommand(ABC):
         result = self.callback(*args, **kwargs)
 
         return result
+
+
+class ShufflePlaySavedTracks(GestureCommand):
+    """
+    Command: Shuffle play most recently saved tracks.
+
+    Parameters:
+      - num_tracks: int - Number of saved tracks to play
+    """
+
+    name = "ShufflePlaySavedTracks"
+    gesture = Gesture(
+        fingers=[
+            Finger.RIGHT_PINKY,
+            Finger.RIGHT_THUMB,
+            Finger.LEFT_INDEX_FINGER,
+            Finger.LEFT_MIDDLE_FINGER,
+        ]
+    )
+
+    def __init__(self, spotify_client: Spotify):
+        self.client = spotify_client
+
+    def callback(self, *args, **kwargs):
+        num_tracks = kwargs.get("num_tracks", 20)
+        saved_tracks = self.client.get_saved_tracks(num_tracks)
+        self.client.shuffle_play(*saved_tracks)
+
+
+def shuffle_saved_tracks_command_factory(spotify_client: Spotify):
+    """Factory for ShufflePlaySavedTracks command."""
+    return ShufflePlaySavedTracks(spotify_client=spotify_client)
