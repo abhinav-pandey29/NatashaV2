@@ -1,3 +1,7 @@
+import cv2
+from mediapipe.python.solutions import drawing_utils
+
+
 class Settings:
     """
     Configuration settings for Natasha.
@@ -23,5 +27,17 @@ class Settings:
             "user-read-playback-state",
         ]
     )
+
+    CV2_FONT_TYPE = cv2.FONT_HERSHEY_DUPLEX
+    CV2_TEXT_COLOR = (255, 255, 255)  # white
+    CV2_LINE_TYPE = cv2.LINE_AA
+
+    HAND_JOINT_SPEC = drawing_utils.DrawingSpec(
+        color=(255, 69, 0), thickness=2, circle_radius=2
+    )
+    HAND_CONNECTION_SPEC = drawing_utils.DrawingSpec(
+        color=(255, 69, 0), thickness=2, circle_radius=2
+    )
+
 
 settings = Settings()
