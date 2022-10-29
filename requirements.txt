@@ -1,3 +1,6 @@
+mediapipe==0.8.11
+numpy==1.21.6
+opencv-python==4.6.0.66
 pydantic==1.9.0
 requests==2.26.0
 spotipy==2.19.0
