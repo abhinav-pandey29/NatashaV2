@@ -32,7 +32,7 @@ class Vision:
                 return command
         return None
 
-    def activate(self, camera_id: int = 0):
+    def activate(self, camera_id: int = 0) -> None:
         cap = cv2.VideoCapture(camera_id)
         if not cap.isOpened():
             raise IOError("Cannot open webcam :(")
