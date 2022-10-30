@@ -129,6 +129,12 @@ class Spotify:
     def play(self, *tracks: TrackItem) -> None:
         return self.client.start_playback(uris=[track.uri for track in tracks])
 
+    def next_track(self) -> None:
+        return self.client.next_track()
+
+    def previous_track(self) -> None:
+        return self.client.previous_track()
+
     def shuffle_play(self, *tracks: TrackItem) -> None:
         tracks = list(tracks)
         random.shuffle(tracks)
