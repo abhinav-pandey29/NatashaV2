@@ -24,9 +24,19 @@ class Spotify:
         )
     )
 
+    def primary_device_id(self) -> Optional[str]:
+        devices = self.get_devices()
+        if devices:
+            return devices.pop(0).id
+        else:
+            return None
+
     def get_devices(self) -> List[PlaybackDevice]:
+        """Get users devices. Active device (if any) is placed first."""
         devices = self.client.devices()
-        return [PlaybackDevice.parse_data(device) for device in devices["devices"]]
+        devices = [PlaybackDevice.parse_data(device) for device in devices["devices"]]
+        devices.sort(key=lambda d: d.is_active, reverse=True)
+        return devices
 
     def get_active_device(self) -> Optional[PlaybackDevice]:
         for device in self.get_devices():
@@ -127,13 +137,16 @@ class Spotify:
             self.client.add_to_queue(track.uri)
 
     def play(self, *tracks: TrackItem) -> None:
-        return self.client.start_playback(uris=[track.uri for track in tracks])
+        return self.client.start_playback(
+            device_id=self.primary_device_id(),
+            uris=[track.uri for track in tracks],
+        )
 
     def next_track(self) -> None:
-        return self.client.next_track()
+        return self.client.next_track(device_id=self.primary_device_id())
 
     def previous_track(self) -> None:
-        return self.client.previous_track()
+        return self.client.previous_track(device_id=self.primary_device_id())
 
     def shuffle_play(self, *tracks: TrackItem) -> None:
         tracks = list(tracks)
