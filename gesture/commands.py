@@ -74,6 +74,57 @@ class ShufflePlaySavedTracks(GestureCommand):
         self.client.shuffle_play(*saved_tracks)
 
 
+class PlayNextTrack(GestureCommand):
+    """
+    Command: Skips to next track in the user's queue.
+    """
+
+    name = "PlayNextTrack"
+    gesture = Gesture(
+        fingers=[
+            Finger.RIGHT_MIDDLE_FINGER,
+            Finger.RIGHT_THUMB,
+        ]
+    )
+
+    def __init__(self, spotify_client: Spotify):
+        self.client = spotify_client
+
+    def callback(self, *args, **kwargs):
+        return self.client.next_track()
+
+
+class PlayPreviousTrack(GestureCommand):
+    """
+    Command: Skips to previous track in the user's queue.
+    """
+
+    name = "PlayPreviousTrack"
+    gesture = Gesture(
+        fingers=[
+            Finger.RIGHT_PINKY,
+            Finger.RIGHT_THUMB,
+            Finger.LEFT_THUMB,
+        ]
+    )
+
+    def __init__(self, spotify_client: Spotify):
+        self.client = spotify_client
+
+    def callback(self, *args, **kwargs):
+        return self.client.previous_track()
+
+
 def shuffle_saved_tracks_command_factory(spotify_client: Spotify):
     """Factory for ShufflePlaySavedTracks command."""
     return ShufflePlaySavedTracks(spotify_client=spotify_client)
+
+
+def play_next_track_command_factory(spotify_client: Spotify):
+    """Factory for PlayNextTrack command."""
+    return PlayNextTrack(spotify_client=spotify_client)
+
+
+def play_prev_track_command_factory(spotify_client: Spotify):
+    """Factory for PlayPreviousTrack command."""
+    return PlayPreviousTrack(spotify_client=spotify_client)

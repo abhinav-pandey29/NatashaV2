@@ -3,7 +3,12 @@ from typing import List
 
 import cv2
 
-from gesture.commands import GestureCommand, shuffle_saved_tracks_command_factory
+from gesture.commands import (
+    GestureCommand,
+    shuffle_saved_tracks_command_factory,
+    play_next_track_command_factory,
+    play_prev_track_command_factory,
+)
 from gesture.hands import Finger, get_hand_detector
 from spotify import Spotify
 
@@ -65,7 +70,11 @@ class Vision:
 if __name__ == "__main__":
     spotify_client = Spotify()
 
-    gestures = [shuffle_saved_tracks_command_factory(spotify_client)]
+    gestures = [
+        shuffle_saved_tracks_command_factory(spotify_client),
+        play_next_track_command_factory(spotify_client),
+        play_prev_track_command_factory(spotify_client),
+    ]
 
     vision = Vision(gestures=gestures, draw=True)
     vision.activate(0)
