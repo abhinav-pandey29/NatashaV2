@@ -134,13 +134,13 @@ class SetPlaybackVolume(GestureCommand):
         Y, X, _ = image.shape
 
         hands = {hand["label"]: hand for hand in found_hands}
+        right_thumb = hands["Right"]["landmarks"].landmark[HandLandmark.THUMB_TIP]
+        controlX, controlY = right_thumb.x, right_thumb.y
         if "Left" in hands:
             left_wrist = hands["Left"]["landmarks"].landmark[HandLandmark.WRIST]
             originX, originY = left_wrist.x, left_wrist.y
         else:
             originX, originY = 0, right_thumb.y
-        right_thumb = hands["Right"]["landmarks"].landmark[HandLandmark.THUMB_TIP]
-        controlX, controlY = right_thumb.x, right_thumb.y
         origin = int(originX * X), int(originY * Y)
         control = int(controlX * X), int(controlY * Y)
 
