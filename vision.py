@@ -8,6 +8,8 @@ from gesture.commands import (
     shuffle_saved_tracks_command_factory,
     play_next_track_command_factory,
     play_prev_track_command_factory,
+    set_volume_command_factory,
+    shuffle_saved_tracks_command_factory,
 )
 from gesture.hands import Finger, get_hand_detector
 from spotify import Spotify
@@ -74,6 +76,7 @@ if __name__ == "__main__":
         shuffle_saved_tracks_command_factory(spotify_client),
         play_next_track_command_factory(spotify_client),
         play_prev_track_command_factory(spotify_client),
+        set_volume_command_factory(spotify_client),
     ]
 
     vision = Vision(gestures=gestures, draw=True)

@@ -1,10 +1,12 @@
 """
 Gesture triggered commands
 """
+import math
 from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
+from mediapipe.python.solutions.hands import HandLandmark
 
 from gesture import Gesture
 from gesture.hands import Finger
@@ -109,6 +111,67 @@ class PlayPreviousTrack(GestureCommand):
         return self.client.previous_track()
 
 
+class SetPlaybackVolume(GestureCommand):
+    """
+    Command: Set Playback Volume
+    """
+
+    name = "SetPlaybackVolume"
+    gesture = Gesture(
+        Finger.RIGHT_THUMB,
+        Finger.RIGHT_MIDDLE_FINGER,
+        Finger.RIGHT_RING_FINGER,
+        Finger.RIGHT_PINKY,
+    )
+
+    def __init__(self, spotify_client: Spotify):
+        self.client = spotify_client
+
+    def callback(self, *args, **kwargs):
+        found_hands = kwargs.get("found_hands")
+        draw = kwargs.get("draw")
+        image = kwargs.get("image")
+        Y, X, _ = image.shape
+
+        hands = {hand["label"]: hand for hand in found_hands}
+        if "Left" in hands:
+            left_wrist = hands["Left"]["landmarks"].landmark[HandLandmark.WRIST]
+            originX, originY = left_wrist.x, left_wrist.y
+        else:
+            originX, originY = 0, right_thumb.y
+        right_thumb = hands["Right"]["landmarks"].landmark[HandLandmark.THUMB_TIP]
+        controlX, controlY = right_thumb.x, right_thumb.y
+        origin = int(originX * X), int(originY * Y)
+        control = int(controlX * X), int(controlY * Y)
+
+        distance = math.sqrt(
+            (origin[0] - control[0]) ** 2 + (origin[1] - control[1]) ** 2
+        )
+        distance_norm = (distance - 35) / (350 - 35) * 100
+        volume = int(min(100, max(0, distance_norm)))
+
+        # Set volume if right pinky is flicked
+        right_pinky = hands["Right"]["landmarks"].landmark[HandLandmark.PINKY_TIP]
+        right_ring = hands["Right"]["landmarks"].landmark[HandLandmark.RING_FINGER_DIP]
+        if right_ring.x > right_pinky.x:
+            print(f" - Setting volume to {volume}...")
+            self.client.set_volume(volume)
+
+        if draw:
+            cv2.circle(image, control, radius=2, color=(0, 255, 255))
+            cv2.line(image, control, origin, color=(0, 255, 0), thickness=2)
+            cv2.putText(
+                image,
+                f"Volume: {volume}",
+                ((origin[0] + control[0]) // 2, 20 + (origin[1] + control[1]) // 2),
+                settings.CV2_FONT_TYPE,
+                0.5,
+                (0, 255, 0),
+                1,
+                settings.CV2_LINE_TYPE,
+            )
+
+
 def shuffle_saved_tracks_command_factory(spotify_client: Spotify):
     """Factory for ShufflePlaySavedTracks command."""
     return ShufflePlaySavedTracks(spotify_client=spotify_client)
@@ -122,3 +185,8 @@ def play_next_track_command_factory(spotify_client: Spotify):
 def play_prev_track_command_factory(spotify_client: Spotify):
     """Factory for PlayPreviousTrack command."""
     return PlayPreviousTrack(spotify_client=spotify_client)
+
+
+def set_volume_command_factory(spotify_client: Spotify):
+    """Factory for SetPlaybackVolume command."""
+    return SetPlaybackVolume(spotify_client=spotify_client)
