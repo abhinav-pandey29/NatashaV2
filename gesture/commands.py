@@ -57,12 +57,10 @@ class ShufflePlaySavedTracks(GestureCommand):
 
     name = "ShufflePlaySavedTracks"
     gesture = Gesture(
-        fingers=[
-            Finger.RIGHT_PINKY,
-            Finger.RIGHT_THUMB,
-            Finger.LEFT_INDEX_FINGER,
-            Finger.LEFT_MIDDLE_FINGER,
-        ]
+        Finger.RIGHT_PINKY,
+        Finger.RIGHT_THUMB,
+        Finger.LEFT_INDEX_FINGER,
+        Finger.LEFT_MIDDLE_FINGER,
     )
 
     def __init__(self, spotify_client: Spotify):
@@ -81,10 +79,8 @@ class PlayNextTrack(GestureCommand):
 
     name = "PlayNextTrack"
     gesture = Gesture(
-        fingers=[
-            Finger.RIGHT_MIDDLE_FINGER,
-            Finger.RIGHT_THUMB,
-        ]
+        Finger.RIGHT_MIDDLE_FINGER,
+        Finger.RIGHT_THUMB,
     )
 
     def __init__(self, spotify_client: Spotify):
@@ -101,11 +97,9 @@ class PlayPreviousTrack(GestureCommand):
 
     name = "PlayPreviousTrack"
     gesture = Gesture(
-        fingers=[
-            Finger.RIGHT_PINKY,
-            Finger.RIGHT_THUMB,
-            Finger.LEFT_THUMB,
-        ]
+        Finger.RIGHT_PINKY,
+        Finger.RIGHT_THUMB,
+        Finger.LEFT_THUMB,
     )
 
     def __init__(self, spotify_client: Spotify):
