@@ -32,10 +32,15 @@ class Spotify:
             return None
 
     def get_devices(self) -> List[PlaybackDevice]:
-        """Get users devices. Active device (if any) is placed first."""
+        """
+        Get users devices.
+
+        Active device (if any) is placed first. In case, none of the devices
+        are active "Computer" types devices are prioritized over "Smartphone".
+        """
         devices = self.client.devices()
         devices = [PlaybackDevice.parse_data(device) for device in devices["devices"]]
-        devices.sort(key=lambda d: d.is_active, reverse=True)
+        devices.sort(key=lambda d: (not d.is_active, d.type))
         return devices
 
     def get_active_device(self) -> Optional[PlaybackDevice]:
