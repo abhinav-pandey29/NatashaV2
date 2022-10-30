@@ -5,6 +5,7 @@ import cv2
 
 from gesture.commands import (
     GestureCommand,
+    open_spotify_command_factory,
     play_next_track_command_factory,
     play_prev_track_command_factory,
     set_volume_command_factory,
@@ -68,6 +69,7 @@ if __name__ == "__main__":
     spotify_client = Spotify()
 
     gestures = [
+        open_spotify_command_factory(),
         shuffle_saved_tracks_command_factory(spotify_client),
         play_next_track_command_factory(spotify_client),
         play_prev_track_command_factory(spotify_client),

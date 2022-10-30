@@ -2,6 +2,7 @@
 Gesture triggered commands
 """
 import math
+import subprocess
 from abc import ABC, abstractmethod
 
 import cv2
@@ -47,6 +48,25 @@ class GestureCommand(ABC):
         result = self.callback(*args, **kwargs)
 
         return result
+
+
+class OpenSpotify(GestureCommand):
+    """
+    Command: Open spotify desktop application.
+    """
+
+    name = "OpenSpotify"
+    gesture = Gesture(
+        Finger.RIGHT_PINKY,
+        Finger.RIGHT_THUMB,
+        Finger.RIGHT_INDEX_FINGER,
+        Finger.LEFT_PINKY,
+        Finger.LEFT_THUMB,
+        Finger.LEFT_INDEX_FINGER,
+    )
+
+    def callback(self, *args, **kwargs) -> None:
+        return subprocess.Popen(settings.SPOTIFY_APPLICATION_PATH)
 
 
 class ShufflePlaySavedTracks(GestureCommand):
@@ -170,6 +190,11 @@ class SetPlaybackVolume(GestureCommand):
                 1,
                 settings.CV2_LINE_TYPE,
             )
+
+
+def open_spotify_command_factory():
+    """Factory for OpenSpotify command."""
+    return OpenSpotify()
 
 
 def shuffle_saved_tracks_command_factory(spotify_client: Spotify):
