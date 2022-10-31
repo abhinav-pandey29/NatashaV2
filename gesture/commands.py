@@ -148,48 +148,74 @@ class SetPlaybackVolume(GestureCommand):
         self.client = spotify_client
 
     def callback(self, *args, **kwargs):
-        found_hands = kwargs.get("found_hands")
+        detector = kwargs.get("hand_detector")
         draw = kwargs.get("draw")
-        image = kwargs.get("image")
-        Y, X, _ = image.shape
+        cap = kwargs.get("cap")
 
-        hands = {hand["label"]: hand for hand in found_hands}
-        right_thumb = hands["Right"]["landmarks"].landmark[HandLandmark.THUMB_TIP]
-        controlX, controlY = right_thumb.x, right_thumb.y
-        if "Left" in hands:
-            left_wrist = hands["Left"]["landmarks"].landmark[HandLandmark.WRIST]
-            originX, originY = left_wrist.x, left_wrist.y
-        else:
-            originX, originY = 0, right_thumb.y
-        origin = int(originX * X), int(originY * Y)
-        control = int(controlX * X), int(controlY * Y)
+        while cap.isOpened():
+            ret, frame = cap.read()
+            image = cv2.flip(frame, 1)  # Flip on horizontal axis
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            found_hands = detector.find_hands(image)
+            if found_hands:
+                fingers = [
+                    k for hand in found_hands for k, v in hand["fingers"].items() if v
+                ]
+                if not self.gesture.match(fingers):
+                    print(f"  - {self.name} exited...")
+                    break
 
-        distance = math.sqrt(
-            (origin[0] - control[0]) ** 2 + (origin[1] - control[1]) ** 2
-        )
-        distance_norm = (distance - 35) / (350 - 35) * 100
-        volume = int(min(100, max(0, distance_norm)))
+                Y, X, _ = image.shape
+                hands = {hand["label"]: hand for hand in found_hands}
+                right_thumb = hands["Right"]["landmarks"].landmark[
+                    HandLandmark.THUMB_TIP
+                ]
+                controlX, controlY = right_thumb.x, right_thumb.y
+                if "Left" in hands:
+                    left_wrist = hands["Left"]["landmarks"].landmark[HandLandmark.WRIST]
+                    originX, originY = left_wrist.x, left_wrist.y
+                else:
+                    originX, originY = 0, right_thumb.y
+                origin = int(originX * X), int(originY * Y)
+                control = int(controlX * X), int(controlY * Y)
 
-        # Set volume if right pinky is flicked
-        right_pinky = hands["Right"]["landmarks"].landmark[HandLandmark.PINKY_TIP]
-        right_ring = hands["Right"]["landmarks"].landmark[HandLandmark.RING_FINGER_DIP]
-        if right_ring.x > right_pinky.x:
-            print(f" - Setting volume to {volume}...")
-            self.client.set_volume(volume)
+                distance = math.sqrt(
+                    (origin[0] - control[0]) ** 2 + (origin[1] - control[1]) ** 2
+                )
+                distance_norm = (distance - 35) / (350 - 35) * 100
+                volume = int(min(100, max(0, distance_norm)))
 
-        if draw:
-            cv2.circle(image, control, radius=2, color=(0, 255, 255))
-            cv2.line(image, control, origin, color=(0, 255, 0), thickness=2)
-            cv2.putText(
-                image,
-                f"Volume: {volume}",
-                ((origin[0] + control[0]) // 2, 20 + (origin[1] + control[1]) // 2),
-                settings.CV2_FONT_TYPE,
-                0.5,
-                (0, 255, 0),
-                1,
-                settings.CV2_LINE_TYPE,
-            )
+                # Set volume if right pinky is flicked
+                right_pinky = hands["Right"]["landmarks"].landmark[
+                    HandLandmark.PINKY_TIP
+                ]
+                right_ring = hands["Right"]["landmarks"].landmark[
+                    HandLandmark.RING_FINGER_DIP
+                ]
+                if right_ring.x > right_pinky.x:
+                    print(f" - Setting volume to {volume}...")
+                    # Set volume and exit from command loop
+                    return self.client.set_volume(volume)
+
+                if draw:
+                    cv2.circle(image, control, radius=2, color=(0, 255, 255))
+                    cv2.line(image, control, origin, color=(0, 255, 0), thickness=2)
+                    cv2.putText(
+                        image,
+                        f"Volume: {volume}",
+                        (
+                            (origin[0] + control[0]) // 2,
+                            20 + (origin[1] + control[1]) // 2,
+                        ),
+                        settings.CV2_FONT_TYPE,
+                        0.5,
+                        (0, 255, 0),
+                        1,
+                        settings.CV2_LINE_TYPE,
+                    )
+                    cv2.imshow("Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
 
 
 def open_spotify_command_factory():
