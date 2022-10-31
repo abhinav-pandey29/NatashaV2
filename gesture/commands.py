@@ -69,6 +69,25 @@ class OpenSpotify(GestureCommand):
         return subprocess.Popen(settings.SPOTIFY_APPLICATION_PATH)
 
 
+class ExitVision(GestureCommand):
+    """
+    Command: Exit Vision.
+    """
+
+    name = "ExitVision"
+    gesture = Gesture(
+        Finger.RIGHT_THUMB,
+        Finger.RIGHT_PINKY,
+        Finger.LEFT_THUMB,
+        Finger.LEFT_MIDDLE_FINGER,
+    )
+
+    def callback(self, *args, **kwargs) -> None:
+        cap = kwargs.get("cap")
+        assert isinstance(cap, cv2.VideoCapture)
+        cap.release()
+
+
 class ShufflePlaySavedTracks(GestureCommand):
     """
     Command: Shuffle play most recently saved tracks.
@@ -216,6 +235,11 @@ class SetPlaybackVolume(GestureCommand):
                     cv2.imshow("Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
+
+
+def exit_vision_command_factory():
+    """Factory for ExitVision command."""
+    return ExitVision()
 
 
 def open_spotify_command_factory():
