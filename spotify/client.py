@@ -36,7 +36,7 @@ class Spotify:
         Get users devices.
 
         Active device (if any) is placed first. In case, none of the devices
-        are active "Computer" types devices are prioritized over "Smartphone".
+        are active then "Computer" devices are prioritized over "Smartphone".
         """
         devices = self.client.devices()
         devices = [PlaybackDevice.parse_data(device) for device in devices["devices"]]
