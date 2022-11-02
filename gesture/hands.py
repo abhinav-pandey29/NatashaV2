@@ -37,9 +37,6 @@ class HandDetector:
         min_tracking_confidence=0.6,
     )
 
-    # TODO: Decouple detection and drawing logic. Specifically,
-    # allow hands to be drawn on any image if they've been previously detected.
-    # And replace found hands in memory only if `.find_hands()` is called again.
     def find_hands(self, image_rgb: np.ndarray) -> List[Dict[str, Any]]:
         """Returns array of hands from an RGB image."""
         found_hands = []
