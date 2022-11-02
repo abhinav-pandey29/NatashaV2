@@ -45,7 +45,11 @@ class GestureCommand(ABC):
                 thickness=1,
                 lineType=settings.CV2_LINE_TYPE,
             )
-        result = self.callback(*args, **kwargs)
+        try:
+            result = self.callback(*args, **kwargs)
+        except Exception as e:
+            print(f" - Error occured when executing Command {self.name}:\n {e}")
+            result = None
 
         return result
 
