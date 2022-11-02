@@ -3,8 +3,11 @@ from typing import Any, Dict, List, Union
 
 import cv2
 import numpy as np
+from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 from mediapipe.python.solutions import drawing_utils
-from mediapipe.python.solutions.hands import HAND_CONNECTIONS, HandLandmark, Hands
+from mediapipe.python.solutions.hands import HAND_CONNECTIONS
+from mediapipe.python.solutions.hands import HandLandmark as HL
+from mediapipe.python.solutions.hands import Hands
 
 from settings import settings
 
@@ -65,7 +68,10 @@ class HandDetector:
     @staticmethod
     # TODO: This only works when the hands are upright, which causes the detector to
     # misinterpret finger orientation when the camera is upside-down.
-    def get_finger_orientation(hand_landmarks, hand_label):
+    def get_finger_orientation(
+        hand_landmarks: NormalizedLandmarkList,
+        hand_label: str,
+    ) -> Dict[Finger, bool]:
         """
         Determines which fingers are upright based on relative position
         of a finger's tip to its joints.
@@ -74,62 +80,37 @@ class HandDetector:
             - _PIP: Proximal interphalangeal joint
             - _MCP: Metacarpophalangeal joint.
         """
-        is_index_up = (
-            hand_landmarks.landmark[HandLandmark.INDEX_FINGER_TIP].y
-            < hand_landmarks.landmark[HandLandmark.INDEX_FINGER_PIP].y
-        )
-        is_middle_up = (
-            hand_landmarks.landmark[HandLandmark.MIDDLE_FINGER_TIP].y
-            < hand_landmarks.landmark[HandLandmark.MIDDLE_FINGER_PIP].y
-        )
-        is_ring_up = (
-            hand_landmarks.landmark[HandLandmark.RING_FINGER_TIP].y
-            < hand_landmarks.landmark[HandLandmark.RING_FINGER_PIP].y
-        )
-        is_pinky_up = (
-            hand_landmarks.landmark[HandLandmark.PINKY_TIP].y
-            < hand_landmarks.landmark[HandLandmark.PINKY_PIP].y
-        )
-        # Since, the thumb opens and closes horizontally, we use x-coordinates
-        # to determine if it's "up". This adds an additional layer of complexity,
-        # because we have to invert the comparisons when the palm of the hand is
-        # facing away in the image.
+        get_x = lambda lmark: hand_landmarks.landmark[lmark].x
+        get_y = lambda lmark: hand_landmarks.landmark[lmark].y
+
+        is_index_up = get_y(HL.INDEX_FINGER_TIP) < get_y(HL.INDEX_FINGER_PIP)
+        is_middle_up = get_y(HL.MIDDLE_FINGER_TIP) < get_y(HL.MIDDLE_FINGER_PIP)
+        is_ring_up = get_y(HL.RING_FINGER_TIP) < get_y(HL.RING_FINGER_PIP)
+        is_pinky_up = get_y(HL.PINKY_TIP) < get_y(HL.PINKY_PIP)
+        # Use x-coordinates to determine if thumb is "up", since it opens and
+        # closes horizontally.
         if hand_label == "Right":
-            if (
-                hand_landmarks.landmark[HandLandmark.THUMB_TIP].x
-                > hand_landmarks.landmark[HandLandmark.PINKY_MCP].x
-            ):
-                is_thumb_up = (
-                    hand_landmarks.landmark[HandLandmark.THUMB_TIP].x
-                    > hand_landmarks.landmark[HandLandmark.THUMB_MCP].x
-                )
+            if get_x(HL.THUMB_TIP) > get_x(HL.PINKY_MCP):
+                # when right palm is facing away from camera
+                is_thumb_up = get_x(HL.THUMB_TIP) > get_x(HL.THUMB_MCP)
             else:
-                is_thumb_up = (
-                    hand_landmarks.landmark[HandLandmark.THUMB_TIP].x
-                    < hand_landmarks.landmark[HandLandmark.THUMB_MCP].x
-                )
+                # when right palm is facing toward the camera
+                is_thumb_up = get_x(HL.THUMB_TIP) < get_x(HL.THUMB_MCP)
         elif hand_label == "Left":
-            if (
-                hand_landmarks.landmark[HandLandmark.THUMB_TIP].x
-                < hand_landmarks.landmark[HandLandmark.PINKY_MCP].x
-            ):
-                is_thumb_up = (
-                    hand_landmarks.landmark[HandLandmark.THUMB_TIP].x
-                    < hand_landmarks.landmark[HandLandmark.THUMB_MCP].x
-                )
+            if get_x(HL.THUMB_TIP) < get_x(HL.PINKY_MCP):
+                # when left palm is facing away from camera
+                is_thumb_up = get_x(HL.THUMB_TIP) < get_x(HL.THUMB_MCP)
             else:
-                is_thumb_up = (
-                    hand_landmarks.landmark[HandLandmark.THUMB_TIP].x
-                    > hand_landmarks.landmark[HandLandmark.THUMB_MCP].x
-                )
+                # when left palm is facing toward the camera
+                is_thumb_up = get_x(HL.THUMB_TIP) > get_x(HL.THUMB_MCP)
 
         prefix_ = hand_label.upper() + "_"
         return {
-            f"{prefix_}THUMB".upper(): is_thumb_up,
-            f"{prefix_}INDEX".upper(): is_index_up,
-            f"{prefix_}MIDDLE".upper(): is_middle_up,
-            f"{prefix_}RING".upper(): is_ring_up,
-            f"{prefix_}PINKY".upper(): is_pinky_up,
+            f"{prefix_}THUMB": is_thumb_up,
+            f"{prefix_}INDEX": is_index_up,
+            f"{prefix_}MIDDLE": is_middle_up,
+            f"{prefix_}RING": is_ring_up,
+            f"{prefix_}PINKY": is_pinky_up,
         }
 
 
@@ -210,7 +191,7 @@ class HandDetectorArtist(HandDetector):
                 self.connection_drawing_spec,
             )
             # Draw hand label (Left, Right) and score
-            label_target = hand["landmarks"].landmark[HandLandmark.WRIST]
+            label_target = hand["landmarks"].landmark[HL.WRIST]
             label_pos = np.array([label_target.x, label_target.y])  # Ratios
             label_pos = (label_pos * [640, 480]).astype(int)  # Pixels
             cv2.putText(
