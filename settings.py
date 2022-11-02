@@ -39,6 +39,7 @@ class Settings:
     HAND_CONNECTION_SPEC = drawing_utils.DrawingSpec(
         color=(255, 69, 0), thickness=2, circle_radius=2
     )
+    BBOX_PADDING = 15
 
 
 settings = Settings()

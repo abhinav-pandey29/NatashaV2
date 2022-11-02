@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import cv2
 import numpy as np
@@ -10,6 +10,8 @@ from mediapipe.python.solutions.hands import HandLandmark as HL
 from mediapipe.python.solutions.hands import Hands
 
 from settings import settings
+
+POINT_2D = Tuple[float, float]
 
 
 class Finger(str, Enum):
@@ -50,6 +52,7 @@ class HandDetector:
                     hand_landmarks=landmarks,
                     hand_label=label,
                 )
+                bbox = self.get_bounding_box(landmarks, *image_rgb.shape)
                 found_hands.append(
                     {
                         "label": label,
@@ -57,10 +60,24 @@ class HandDetector:
                         "landmarks": landmarks,
                         "fingers": fingers,
                         "finger_count": sum(fingers.values()),
+                        "bbox": bbox,
                     }
                 )
 
         return found_hands
+
+    @staticmethod
+    def get_bounding_box(
+        hand_landmarks: NormalizedLandmarkList,
+        *img_shape,
+    ) -> Tuple[POINT_2D, POINT_2D]:
+        """Returns pixel coordinates of outer edges the hands."""
+        x_coords = [lmark.x for lmark in hand_landmarks.landmark]
+        y_coords = [lmark.y for lmark in hand_landmarks.landmark]
+        h, w, *_ = img_shape
+        xmin, xmax = min(x_coords) * w, max(x_coords) * w
+        ymin, ymax = min(y_coords) * h, max(y_coords) * h
+        return (xmin, ymin), (xmax, ymax)
 
     @staticmethod
     # TODO: This only works when the hands are upright, which causes the detector to
@@ -121,12 +138,14 @@ class HandDetectorArtist(HandDetector):
         line_type=None,
         joint_drawing_spec=None,
         connection_drawing_spec=None,
+        bbox_padding=None,
     ):
         self._font_type = font_type
         self._text_color = text_color
         self._line_type = line_type
         self._joint_drawing_spec = joint_drawing_spec
         self._connection_drawing_spec = connection_drawing_spec
+        self._bbox_padding = bbox_padding
 
     @property
     def font_type(self):
@@ -148,6 +167,10 @@ class HandDetectorArtist(HandDetector):
     def connection_drawing_spec(self):
         return self._connection_drawing_spec or settings.HAND_CONNECTION_SPEC
 
+    @property
+    def bbox_padding(self):
+        return self._bbox_padding or settings.BBOX_PADDING
+
     def set_font_type(self, font_type):
         self._font_type = font_type
 
@@ -163,12 +186,16 @@ class HandDetectorArtist(HandDetector):
     def set_connection_drawing_spec(self, spec):
         self._connection_drawing_spec = spec
 
+    def set_bbox_padding(self, value):
+        self._bbox_padding = value
+
     def reset_artist(self):
         self.set_font_type(None)
         self.set_text_color(None)
         self.set_line_type(None)
         self.set_joint_drawing_spec(None)
         self.set_connection_drawing_spec(None)
+        self.set_bbox_padding(None)
 
     def find_hands(self, image_rgb: np.ndarray) -> List[Dict[str, Any]]:
         """
@@ -201,6 +228,11 @@ class HandDetectorArtist(HandDetector):
                 1,
                 self.line_type,
             )
+            # Draw bounding box
+            pt1, pt2 = hand["bbox"]
+            pt1 = tuple(int(x - self.bbox_padding) for x in pt1)
+            pt2 = tuple(int(x + self.bbox_padding) for x in pt2)
+            cv2.rectangle(image_rgb, pt1, pt2, (200, 123, 90), 2)
             # Draw finger labels
             gesture = [k for k, v in hand["fingers"].items() if v]
             if gesture:
