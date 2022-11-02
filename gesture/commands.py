@@ -10,7 +10,7 @@ import numpy as np
 from mediapipe.python.solutions.hands import HandLandmark
 
 from gesture import Gesture
-from gesture.hands import Finger
+from gesture.hands import Finger, HandDetector
 from settings import settings
 from spotify import Spotify
 
@@ -82,8 +82,7 @@ class ExitVision(GestureCommand):
         Finger.LEFT_MIDDLE_FINGER,
     )
 
-    def callback(self, *args, **kwargs) -> None:
-        cap = kwargs.get("cap")
+    def callback(self, cap: cv2.VideoCapture, *args, **kwargs) -> None:
         assert isinstance(cap, cv2.VideoCapture)
         cap.release()
 
@@ -107,8 +106,7 @@ class ShufflePlaySavedTracks(GestureCommand):
     def __init__(self, spotify_client: Spotify):
         self.client = spotify_client
 
-    def callback(self, *args, **kwargs):
-        num_tracks = kwargs.get("num_tracks", 20)
+    def callback(self, num_tracks: int = 20, *args, **kwargs):
         saved_tracks = self.client.get_saved_tracks(num_tracks)
         self.client.shuffle_play(*saved_tracks)
 
@@ -166,16 +164,19 @@ class SetPlaybackVolume(GestureCommand):
     def __init__(self, spotify_client: Spotify):
         self.client = spotify_client
 
-    def callback(self, *args, **kwargs):
-        detector = kwargs.get("hand_detector")
-        draw = kwargs.get("draw")
-        cap = kwargs.get("cap")
-
+    def callback(
+        self,
+        hand_detector: HandDetector,
+        cap: cv2.VideoCapture,
+        draw: bool = False,
+        *args,
+        **kwargs,
+    ):
         while cap.isOpened():
             ret, frame = cap.read()
             image = cv2.flip(frame, 1)  # Flip on horizontal axis
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            found_hands = detector.find_hands(image)
+            found_hands = hand_detector.find_hands(image)
             if found_hands:
                 fingers = [
                     k for hand in found_hands for k, v in hand["fingers"].items() if v
