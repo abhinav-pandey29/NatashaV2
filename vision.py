@@ -34,7 +34,7 @@ class Vision:
                 return command
         return None
 
-    def activate(self, camera_id: int = 0) -> None:
+    def activate(self, camera_id: int = 0, hidden: bool = False) -> None:
         cap = cv2.VideoCapture(camera_id)
         if not cap.isOpened():
             raise IOError("Cannot open webcam :(")
@@ -58,13 +58,18 @@ class Vision:
                         found_hands=found_hands,
                         draw=self._draw,
                         cap=cap,
+                        hidden=hidden,
                     )
-                    cv2.imshow("Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-                    cv2.waitKey(1)
+                    if not hidden:
+                        cv2.imshow(
+                            "Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                        )
+                        cv2.waitKey(1)
 
-            cv2.imshow("Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-            if cv2.waitKey(10) & 0xFF == ord("q"):
-                break
+            if not hidden:
+                cv2.imshow("Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+                if cv2.waitKey(10) & 0xFF == ord("q"):
+                    break
 
 
 if __name__ == "__main__":

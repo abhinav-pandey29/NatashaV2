@@ -173,6 +173,7 @@ class SetPlaybackVolume(GestureCommand):
         hand_detector: HandDetector,
         cap: cv2.VideoCapture,
         draw: bool = False,
+        hidden: bool = False,
         *args,
         **kwargs,
     ):
@@ -237,9 +238,12 @@ class SetPlaybackVolume(GestureCommand):
                         1,
                         settings.CV2_LINE_TYPE,
                     )
-                    cv2.imshow("Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
+                    if not hidden:
+                        cv2.imshow(
+                            "Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                        )
+                        if cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
 
 
 def exit_vision_command_factory():
