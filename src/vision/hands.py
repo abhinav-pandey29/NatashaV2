@@ -9,7 +9,7 @@ from mediapipe.python.solutions.hands import HAND_CONNECTIONS
 from mediapipe.python.solutions.hands import HandLandmark as HL
 from mediapipe.python.solutions.hands import Hands
 
-from settings import settings
+from config.settings import settings
 
 POINT_2D = Tuple[float, float]
 
@@ -94,8 +94,10 @@ class HandDetector:
             - _PIP: Proximal interphalangeal joint
             - _MCP: Metacarpophalangeal joint.
         """
-        get_x = lambda lmark: hand_landmarks.landmark[lmark].x
-        get_y = lambda lmark: hand_landmarks.landmark[lmark].y
+        def get_x(lmark):
+            return hand_landmarks.landmark[lmark].x
+        def get_y(lmark):
+            return hand_landmarks.landmark[lmark].y
 
         is_index_up = get_y(HL.INDEX_FINGER_TIP) < get_y(HL.INDEX_FINGER_PIP)
         is_middle_up = get_y(HL.MIDDLE_FINGER_TIP) < get_y(HL.MIDDLE_FINGER_PIP)

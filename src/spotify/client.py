@@ -7,9 +7,9 @@ from typing import List, Optional
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-from settings import settings
+from config.settings import settings
 from spotify.entity import Artist, AudioFeatures, PlaybackDevice, TrackItem
-from utils import get_chunks
+from utils import chunk_list
 
 
 class Spotify:
@@ -121,7 +121,7 @@ class Spotify:
         """
         track_ids = [track.id for track in tracks]
         audio_features = []
-        for chunk in get_chunks(track_ids, 100):  # 100 = Max allowed tracks
+        for chunk in chunk_list(track_ids, 100):  # 100 = Max allowed tracks
             chunk_features = self.client.audio_features(chunk)
             audio_features.extend(chunk_features)
 

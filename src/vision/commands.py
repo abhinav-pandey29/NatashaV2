@@ -7,12 +7,12 @@ from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
+from config.settings import settings
 from mediapipe.python.solutions.hands import HandLandmark
 
-from gesture import Gesture
-from gesture.hands import Finger, HandDetector
-from settings import settings
 from spotify import Spotify
+from vision.gesture import Gesture
+from vision.hands import Finger, HandDetector
 
 
 class GestureCommand(ABC):
@@ -27,7 +27,7 @@ class GestureCommand(ABC):
 
     def __call__(self, *args, **kwargs):
         print(f"{self.name} triggered by {self.gesture}")
-        if kwargs.get("draw") == True and kwargs.get("image") is not None:
+        if kwargs.get("draw") and kwargs.get("image") is not None:
             image = kwargs.get("image")
             assert isinstance(image, np.ndarray)
 
