@@ -1,9 +1,9 @@
-import time
 from typing import List, Optional
 
 import cv2
 
-from gesture.commands import (
+from spotify import Spotify
+from vision.commands import (
     GestureCommand,
     exit_vision_command_factory,
     open_spotify_command_factory,
@@ -12,8 +12,7 @@ from gesture.commands import (
     set_volume_command_factory,
     shuffle_saved_tracks_command_factory,
 )
-from gesture.hands import Finger, get_hand_detector
-from spotify import Spotify
+from vision.hands import Finger, get_hand_detector
 
 
 class Vision:
@@ -41,7 +40,7 @@ class Vision:
 
         while cap.isOpened():
             activated_command = None
-            ret, frame = cap.read()
+            _, frame = cap.read()
             image = cv2.flip(frame, 1)  # Flip on horizontal axis
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             found_hands = self.hand_detector.find_hands(image)
@@ -52,7 +51,7 @@ class Vision:
 
                 activated_command = self.get_activated_command(fingers)
                 if activated_command:
-                    result = activated_command(
+                    activated_command(
                         hand_detector=self.hand_detector,
                         image=image,
                         found_hands=found_hands,

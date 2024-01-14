@@ -1,6 +1,6 @@
 from typing import List
 
-from gesture.hands import Finger
+from vision.hands import Finger
 
 
 class Gesture:

@@ -8,7 +8,6 @@ from sqlmodel import SQLModel
 
 
 class _BaseSpotifyEntity(SQLModel):
-
     _translation_paths: Dict[str, Tuple[str]] = {}
 
     @staticmethod
@@ -32,7 +31,6 @@ class _BaseSpotifyEntity(SQLModel):
 
 
 class TrackItem(_BaseSpotifyEntity):
-
     id: str
     uri: str
     name: str
@@ -46,7 +44,6 @@ class TrackItem(_BaseSpotifyEntity):
 
 
 class Artist(_BaseSpotifyEntity):
-
     id: str
     uri: str
     name: str
@@ -57,15 +54,11 @@ class Artist(_BaseSpotifyEntity):
 
     _translation_paths = {
         "spotify_url": ("external_urls", "spotify"),
-        "followers": (
-            "followers",
-            "total",
-        ),
+        "followers": ("followers", "total"),
     }
 
 
 class SpotifyPlaylist(_BaseSpotifyEntity):
-
     id: str = ""
     uri: str = ""
     name: str
@@ -78,7 +71,6 @@ class SpotifyPlaylist(_BaseSpotifyEntity):
 
 
 class PlaybackDevice(_BaseSpotifyEntity):
-
     id: str
     name: str
     type: str
@@ -89,7 +81,6 @@ class PlaybackDevice(_BaseSpotifyEntity):
 
 
 class AudioFeatures(_BaseSpotifyEntity):
-
     track_id: str = None
     danceability: str
     energy: str
