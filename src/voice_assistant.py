@@ -19,6 +19,7 @@ class VoiceAssistant:
     """
 
     WAKE_WORD = "natasha"
+    TERMINATION_PHRASE = "stop listening"
 
     def __init__(self) -> None:
         self.voice_commands = []
@@ -61,7 +62,7 @@ class VoiceAssistant:
         return None
 
     def handle_command(self, speech_as_text: str):
-        if "stop listening" in speech_as_text.lower():
+        if self.TERMINATION_PHRASE in speech_as_text.lower():
             self.active = False
             print("Stopping voice recognition.")
             return
