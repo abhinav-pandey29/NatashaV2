@@ -1,6 +1,7 @@
 """
 Spotify service and actions.
 """
+
 import random
 from typing import List, Optional
 
@@ -26,10 +27,7 @@ class Spotify:
 
     def primary_device_id(self) -> Optional[str]:
         devices = self.get_devices()
-        if devices:
-            return devices.pop(0).id
-        else:
-            return None
+        return devices[0].id if devices else None
 
     def get_devices(self) -> List[PlaybackDevice]:
         """
@@ -44,10 +42,7 @@ class Spotify:
         return devices
 
     def get_active_device(self) -> Optional[PlaybackDevice]:
-        for device in self.get_devices():
-            if device.is_active:
-                return device
-        return None
+        return next((d for d in self.get_devices() if d.is_active), None)
 
     def get_followed_artists(self, limit: int) -> List[Artist]:
         """
