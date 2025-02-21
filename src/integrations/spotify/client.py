@@ -8,9 +8,10 @@ from typing import List, Optional
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-from config.settings import settings
-from spotify.entity import Artist, AudioFeatures, PlaybackDevice, TrackItem
-from utils import chunk_list
+from src.config.settings import settings
+from src.utils import chunk_list
+
+from .entity import Artist, AudioFeatures, PlaybackDevice, TrackItem
 
 
 class Spotify:

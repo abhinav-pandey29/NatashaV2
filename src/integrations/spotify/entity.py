@@ -1,6 +1,7 @@
 """
 Spotify entities and related enums.
 """
+
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
@@ -21,13 +22,13 @@ class _BaseSpotifyEntity(SQLModel):
 
     @classmethod
     def parse_data(cls, data: dict) -> "_BaseSpotifyEntity":
-        required_keys = {field: data.get(field) for field in cls.__fields__}
+        required_keys = {field: data.get(field) for field in cls.model_fields}
         nested_keys = {
             key: cls.parse_translations(data, path)
-            for key, path in cls._translation_paths.items()
+            for key, path in cls._translation_paths.get_default().items()
         }
         required_keys.update(nested_keys)
-        return cls.parse_obj(required_keys)
+        return cls.model_validate(required_keys)
 
 
 class TrackItem(_BaseSpotifyEntity):
@@ -35,8 +36,8 @@ class TrackItem(_BaseSpotifyEntity):
     uri: str
     name: str
     popularity: int
-    duration_ms: str
-    preview_url: str = None
+    duration_ms: int
+    preview_url: Optional[str] = None
     spotify_url: str
     played_at: Optional[datetime] = None
 
