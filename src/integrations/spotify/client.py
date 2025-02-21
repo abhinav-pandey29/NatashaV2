@@ -27,6 +27,7 @@ class Spotify:
     )
 
     def primary_device_id(self) -> Optional[str]:
+        # Device sorting logic (active > Computer > Smartphone > Others)
         devices = self.get_devices()
         return devices[0].id if devices else None
 
