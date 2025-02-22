@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Optional, Union
 
 import numpy as np
 from mediapipe.python.solutions.hands import Hands
 
+from src.core.vision.artist import Artist, DrawingConfig
 from src.core.vision.base_detector import BaseDetector
 
 from .result import HandDetectionResult
@@ -49,3 +50,22 @@ class HandDetector(BaseDetector):
             )
 
         return results
+
+
+class HandDetectorArtist(HandDetector):
+    """Hand detector service with additional visualization features."""
+
+    def __init__(self, draw_config: Optional[DrawingConfig] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.artist = Artist(draw_config)
+
+    def detect(self, image_rgb: np.ndarray) -> List[HandDetectionResult]:
+        """Returns array of hands from an RGB image and draws landmarks."""
+        results = super().detect(image_rgb)
+        self.artist.draw_hand(image_rgb, results)
+        return results
+
+
+def get_hand_detector(draw: bool = True) -> Union[HandDetector, HandDetectorArtist]:
+    """Factory for Hand Detector service."""
+    return HandDetectorArtist() if draw else HandDetector()
