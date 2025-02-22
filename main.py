@@ -2,8 +2,7 @@ from typing import List, Optional
 
 import cv2
 
-from spotify import Spotify
-from vision.commands import (
+from src.commands.gesture_commands import (
     GestureCommand,
     exit_vision_command_factory,
     open_spotify_command_factory,
@@ -12,7 +11,9 @@ from vision.commands import (
     set_volume_command_factory,
     shuffle_saved_tracks_command_factory,
 )
-from vision.hands import Finger, get_hand_detector
+from src.core.vision.hands.detector import get_hand_detector
+from src.core.vision.hands.result import Finger
+from src.integrations.spotify import Spotify
 
 
 class Vision:
@@ -43,14 +44,19 @@ class Vision:
             _, frame = cap.read()
             image = cv2.flip(frame, 1)  # Flip on horizontal axis
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            found_hands = self.hand_detector.find_hands(image)
+            found_hands = self.hand_detector.detect(image)
             if found_hands:
                 fingers = [
-                    k for hand in found_hands for k, v in hand["fingers"].items() if v
+                    k for hand in found_hands for k, v in hand.fingers.items() if v
                 ]
 
                 activated_command = self.get_activated_command(fingers)
                 if activated_command:
+                    if not hidden:
+                        cv2.imshow(
+                            "Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                        )
+                        cv2.waitKey(1)
                     activated_command(
                         hand_detector=self.hand_detector,
                         image=image,
@@ -59,11 +65,6 @@ class Vision:
                         cap=cap,
                         hidden=hidden,
                     )
-                    if not hidden:
-                        cv2.imshow(
-                            "Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                        )
-                        cv2.waitKey(1)
 
             if not hidden:
                 cv2.imshow("Hand Tracking", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
