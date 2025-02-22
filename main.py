@@ -24,7 +24,7 @@ class Vision:
     def __init__(
         self, gestures: List[GestureCommand] = None, draw: bool = True
     ) -> None:
-        self._draw = True
+        self._draw = draw
         self.hand_detector = get_hand_detector(draw=draw)
         self.gesture_commands = gestures if gestures is not None else []
 
