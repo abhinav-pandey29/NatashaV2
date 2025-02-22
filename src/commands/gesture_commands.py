@@ -1,18 +1,33 @@
 """
 Gesture triggered commands
 """
+
 import math
 import subprocess
 from abc import ABC, abstractmethod
+from typing import List
 
 import cv2
 import numpy as np
-from config.settings import settings
 from mediapipe.python.solutions.hands import HandLandmark
 
-from spotify import Spotify
-from vision.gesture import Gesture
-from vision.hands import Finger, HandDetector
+from src.config.settings import settings
+from src.core.vision.hands.detector import HandDetector
+from src.core.vision.hands.result import Finger
+from src.integrations.spotify import Spotify
+
+
+class Gesture:
+    """Hand Gesture object."""
+
+    def __init__(self, *fingers: Finger):
+        self.fingers = list(fingers)
+
+    def __repr__(self):
+        return "Gesture: " + ",".join(self.fingers)
+
+    def match(self, g: List[Finger]):
+        return set(self.fingers) == set(g)
 
 
 class GestureCommand(ABC):
@@ -181,23 +196,21 @@ class SetPlaybackVolume(GestureCommand):
             ret, frame = cap.read()
             image = cv2.flip(frame, 1)  # Flip on horizontal axis
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            found_hands = hand_detector.find_hands(image)
+            found_hands = hand_detector.detect(image)
             if found_hands:
                 fingers = [
-                    k for hand in found_hands for k, v in hand["fingers"].items() if v
+                    k for hand in found_hands for k, v in hand.fingers.items() if v
                 ]
                 if not self.gesture.match(fingers):
                     print(f"  - {self.name} exited...")
-                    break
+                    return
 
                 Y, X, _ = image.shape
-                hands = {hand["label"]: hand for hand in found_hands}
-                right_thumb = hands["Right"]["landmarks"].landmark[
-                    HandLandmark.THUMB_TIP
-                ]
+                hands = {hand.label: hand for hand in found_hands}
+                right_thumb = hands["Right"].landmarks.landmark[HandLandmark.THUMB_TIP]
                 controlX, controlY = right_thumb.x, right_thumb.y
                 if "Left" in hands:
-                    left_wrist = hands["Left"]["landmarks"].landmark[HandLandmark.WRIST]
+                    left_wrist = hands["Left"].landmarks.landmark[HandLandmark.WRIST]
                     originX, originY = left_wrist.x, left_wrist.y
                 else:
                     originX, originY = 0, right_thumb.y
@@ -211,10 +224,8 @@ class SetPlaybackVolume(GestureCommand):
                 volume = int(min(100, max(0, distance_norm)))
 
                 # Set volume if right pinky is flicked
-                right_pinky = hands["Right"]["landmarks"].landmark[
-                    HandLandmark.PINKY_TIP
-                ]
-                right_ring = hands["Right"]["landmarks"].landmark[
+                right_pinky = hands["Right"].landmarks.landmark[HandLandmark.PINKY_TIP]
+                right_ring = hands["Right"].landmarks.landmark[
                     HandLandmark.RING_FINGER_DIP
                 ]
                 if right_ring.x > right_pinky.x:
