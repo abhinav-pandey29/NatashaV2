@@ -22,11 +22,15 @@ class Vision:
     """
 
     def __init__(
-        self, gestures: List[GestureCommand] = None, draw: bool = True
-    ) -> None:
-        self._draw = draw
+        self,
+        camera_id: int = 0,
+        gesture_commands: List[GestureCommand] = None,
+        draw: bool = True,
+    ):
+        self.camera_id = camera_id
         self.hand_detector = get_hand_detector(draw=draw)
-        self.gesture_commands = gestures if gestures is not None else []
+        self.gesture_commands = gesture_commands if gesture_commands is not None else []
+        self._draw = draw
 
     def get_activated_command(self, g: List[Finger]) -> Optional[List[GestureCommand]]:
         for command in self.gesture_commands:
@@ -34,8 +38,8 @@ class Vision:
                 return command
         return None
 
-    def activate(self, camera_id: int = 0, hidden: bool = False) -> None:
-        cap = cv2.VideoCapture(camera_id)
+    def activate(self, hidden: bool = False) -> None:
+        cap = cv2.VideoCapture(self.camera_id)
         if not cap.isOpened():
             raise IOError("Cannot open webcam :(")
 
@@ -75,7 +79,7 @@ class Vision:
 if __name__ == "__main__":
     spotify_client = Spotify()
 
-    gestures = [
+    spotify_gestures = [
         exit_vision_command_factory(),
         open_spotify_command_factory(),
         shuffle_saved_tracks_command_factory(spotify_client),
@@ -84,5 +88,5 @@ if __name__ == "__main__":
         set_volume_command_factory(spotify_client),
     ]
 
-    vision = Vision(gestures=gestures, draw=True)
-    vision.activate(0)
+    vision = Vision(camera_id=0, gesture_commands=spotify_gestures, draw=True)
+    vision.activate()
