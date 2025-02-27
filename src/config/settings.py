@@ -1,5 +1,10 @@
+import os
+
 import cv2
+from dotenv import find_dotenv, load_dotenv
 from mediapipe.python.solutions import drawing_utils
+
+load_dotenv(find_dotenv())
 
 
 class Settings:
@@ -7,11 +12,11 @@ class Settings:
     Configuration settings for Natasha.
     """
 
-    SPOTIFY_APPLICATION_PATH = "C:/Users/abhin/AppData/Roaming/Spotify/Spotify.exe"
-    SPOTIPY_CLIENT_ID = "c10601a9449f401da5b8490fbfa74d3b"
-    SPOTIPY_CLIENT_SECRET = "fab5db69e6cb4db5b6fff6e59d81a45a"
-    SPOTIPY_REDIRECT_URI = "http://127.0.0.1:9090"
-    SPOTIFY_USER_ID = "31e3jjllwbuuqwqb222m33w5svyq"
+    SPOTIFY_APPLICATION_PATH = os.getenv("SPOTIFY_APPLICATION_PATH")
+    SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
+    SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
+    SPOTIPY_REDIRECT_URI = os.getenv("SPOTIPY_REDIRECT_URI")
+    SPOTIFY_USER_ID = os.getenv("SPOTIFY_USER_ID")
     SPOTIFY_SCOPE = ",".join(
         [
             "user-read-private",
